@@ -1,16 +1,23 @@
 import React, { useState } from 'react';
 import * as Yup from 'yup';
 import { ErrorMessage, Field, Form, Formik } from 'formik';
+import { login } from '../services/auth.service';
+import { NavigateFunction, useNavigate } from 'react-router-dom';
 
 const LoginForm: React.FC = () => {
-
+  let navigate: NavigateFunction = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [message, setMessage] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false);
+
 
   const checkLogin = (username: string, password: string) => {
     if (username === 'admin@gmail.com' && password === '1234567') {
       return true;
     }
     return false;
+
+
   }
   const initialValues = {
     username: "",
@@ -39,20 +46,40 @@ const LoginForm: React.FC = () => {
   }
   const handleSubmit = (formValue: { username: string; password: string }) => {
     const { username, password } = formValue;
+    setMessage("");
+    setLoading(true);
+    // if (!isSubmitting) {
+    //   setIsSubmitting(true);
+    //   // Gửi yêu cầu đăng nhập đến server
+    //   if (checkLogin(username, password)) {
+    //     window.localStorage.setItem("user", "login-done");
+    //     window.location.href = '/';
+    //   }
+    //   else {
+    //     alert('Wrong username or password!')
+    //   }
 
-    if (!isSubmitting) {
-      setIsSubmitting(true);
-      // Gửi yêu cầu đăng nhập đến server
-      if (checkLogin(username, password)) {
-        window.localStorage.setItem("user", "login-done");
-        window.location.href = '/';
-      }
-      else {
-        alert('Wrong username or password!')
-      }
+    //   setIsSubmitting(false);
 
-      setIsSubmitting(false);
-    }
+    // }
+    login(username, password).then(
+      () => {
+        navigate("/user");
+        window.location.reload();
+      },
+      (error) => {
+        const resMessage =
+          (error.response &&
+            error.response.data &&
+            error.response.data.message) ||
+          error.message ||
+          error.toString();
+
+        setLoading(false);
+        setMessage(resMessage);
+        // console.log(message);
+      }
+    );
   };
 
   return (
@@ -94,13 +121,13 @@ const LoginForm: React.FC = () => {
                 <span>Login</span>
               </button>
             </div>
-            {/* {message && (
+            {message && (
               <div className="form-group">
                 <div className="alert alert-danger" role="alert">
                   {message}
                 </div>
               </div>
-            )} */}
+            )}
           </Form>
         </Formik>
       </div>

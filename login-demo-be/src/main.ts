@@ -7,8 +7,10 @@ import { logger } from './config/logger.middleware';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.enableCors();
+
   // app.use(logger)
-  
+
   //swagger
   const config = new DocumentBuilder()
     .setTitle('API Documentation')
